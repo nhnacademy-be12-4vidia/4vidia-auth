@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: 4vidia-auth
+  jwt:
+    secret: "qwertyujhgfdsazxcvbnjhgfdsqwertyuhgfdsazxcvb"
+
+auth:
+  cookie:
+    secure: true
