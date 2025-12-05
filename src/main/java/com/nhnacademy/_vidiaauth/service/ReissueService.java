@@ -24,7 +24,7 @@ public class ReissueService {
     public TokenResponse reissueTokens(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String refreshToken = getRefreshTokenFromCookie(request);
 
-        if (refreshToken == null) {
+        if (refreshToken == null || refreshToken.isBlank()) {
             return null;
         }
 

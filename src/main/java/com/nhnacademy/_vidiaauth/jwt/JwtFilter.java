@@ -43,7 +43,7 @@ public class JwtFilter extends OncePerRequestFilter {
         } else {
             // Access token expired → refresh token 확인
             String refreshToken = getRefreshTokenFromCookie(request);
-            if (refreshToken != null
+            if (refreshToken != null && !refreshToken.isBlank()
                     && jwtUtil.isTokenValid(refreshToken)
                     && "refresh".equals(jwtUtil.getType(refreshToken))
                     && refreshTokenService.validateRefreshToken(jwtUtil.getEmail(refreshToken), refreshToken)) {
