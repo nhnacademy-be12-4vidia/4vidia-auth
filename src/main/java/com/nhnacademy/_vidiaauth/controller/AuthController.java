@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiaauth.controller;
 
+import com.nhnacademy._vidiaauth.dto.CustomUserDetails;
 import com.nhnacademy._vidiaauth.dto.TokenResponse;
 import com.nhnacademy._vidiaauth.repository.RefreshTokenService;
 import com.nhnacademy._vidiaauth.service.ReissueService;
@@ -9,6 +10,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,12 +45,12 @@ public class AuthController {
         return ResponseEntity.ok(tokenResponse);
     }
     @PostMapping("/auth/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request) {
+    public ResponseEntity<String> logout(@RequestHeader("X-User-Id") Long userId, HttpServletRequest request) {
         String refreshToken = getRefreshTokenFromCookie(request);
         if (refreshToken != null) {
             refreshTokenService.deleteRefreshToken(refreshToken);
         }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(String.valueOf(userId));
     }
 
     private String getRefreshTokenFromCookie(HttpServletRequest request) {
