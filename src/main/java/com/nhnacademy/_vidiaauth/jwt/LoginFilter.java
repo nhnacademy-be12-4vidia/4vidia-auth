@@ -62,7 +62,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String email = user.getUsername();
         String roles = user.getAuthorities().iterator().next().getAuthority();
 
-        String accessToken = jwtUtil.createToken(userId, email, roles, 1000L * 60 * 30, "access");  // 30분
+        String accessToken = jwtUtil.createToken(userId, email, roles, 1000L * 20 * 30, "access");  // 30분
         String refreshToken = jwtUtil.createToken(userId, email, roles, 1000L * 60 * 60 * 24 * 7, "refresh"); // 7일
 
         // DB 저장
