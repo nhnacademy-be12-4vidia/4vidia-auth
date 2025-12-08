@@ -53,7 +53,7 @@ public class JwtFilter extends OncePerRequestFilter {
                         jwtUtil.getUserId(refreshToken),
                         jwtUtil.getEmail(refreshToken),
                         jwtUtil.getRoles(refreshToken),
-                        1000L * 20 * 30, // 30분
+                        1000L * 60 * 30, // 30분
                         "access"
                 );
                 response.setHeader("Authorization", "Bearer " + newAccessToken);
