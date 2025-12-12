@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "4vidia-bookstore-service")
 public interface UserClient {
+
     @GetMapping("/users") // 기존 "/my/users"
     UserInfoResponse getUserByEmail(@RequestParam String email);
 }
