@@ -42,7 +42,7 @@ public class PaycoController {
 //        /payco-member 조회
 //        /내DB 조회 or 회원가입
 //        /JWT 발급 → 프론트 반환
-        PaycoTokenResponse token = paycoAuthService.getAccessToken(code, state);
+        PaycoTokenResponse token = paycoAuthService.getAccessToken(code);
         PaycoMemberResponse member = paycoAuthService.getMemberInfo(token.getAccessToken());
         String id = member.getData().getMember().getIdNo();
         String email = member.getData().getMember().getEmail();

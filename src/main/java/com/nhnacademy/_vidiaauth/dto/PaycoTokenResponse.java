@@ -23,5 +23,4 @@ public class PaycoTokenResponse {
     @JsonProperty("expires_in")
     private String expiresIn;
 
-    private String state;
 }
