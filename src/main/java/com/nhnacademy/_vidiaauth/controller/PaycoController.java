@@ -54,7 +54,7 @@ public class PaycoController {
         System.out.println(member);
 
         // 6. 프론트로 이동
-        response.sendRedirect("http://localhost:8080/");
+        response.sendRedirect("https://4vidia/");
     }
 
     private void addCookie(HttpServletResponse response,
