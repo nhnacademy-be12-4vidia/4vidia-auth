@@ -11,9 +11,10 @@ spring:
 jwt:
   secret: "qwertyujhgfdsazxcvbnjhgfdsqwertyuhgfdsazxcvb"
 
-auth:
+app:
   cookie:
     secure: true
+    domain: ".4vidia.shop"
 
 eureka:
   client:
