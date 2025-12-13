@@ -44,12 +44,14 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ADMIN_ID: ${{ secrets.ADMIN_ID }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          PAYCO_CLIENT_ID: ${{ secrets.PAYCO_CLIENT_ID }}
+          PAYCO_CLIENT_SECRET: ${{  secrets.PAYCO_CLIENT_SECRET }}
         with:
           host: s2.java21.net
           username: be12-team4
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 8822
-          envs: GH_TOKEN,GH_OWNER,SSH_PRIVATE_KEY,ADMIN_ID,ADMIN_PASSWORD
+          envs: GH_TOKEN,GH_OWNER,SSH_PRIVATE_KEY,ADMIN_ID,ADMIN_PASSWORD,PAYCO_CLIENT_ID,PAYCO_CLIENT_SECRET
           script_stop: true
           script: |
             echo $GH_TOKEN | docker login ghcr.io -u baejongto --password-stdin

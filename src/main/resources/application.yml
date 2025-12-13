@@ -8,8 +8,8 @@ spring:
       password: "*N2vya7H@muDTwdNMR!"
       database: 387
       timeout: 5000ms
-  jwt:
-    secret: "qwertyujhgfdsazxcvbnjhgfdsqwertyuhgfdsazxcvb"
+jwt:
+  secret: "qwertyujhgfdsazxcvbnjhgfdsqwertyuhgfdsazxcvb"
 
 auth:
   cookie:
@@ -19,3 +19,10 @@ eureka:
   client:
     service-url:
       defaultZone: http://${ADMIN_ID}:${ADMIN_PASSWORD}@4vidia-discovery-1:8080/eureka/
+server:
+  port: 8080
+
+payco:
+  client-id:  ${PAYCO_CLIENT_ID}
+  client-secret:  ${PAYCO_CLIENT_SECRET}
+  redirect-uri: https://4vidia.shop/login/oauth2/code/payco
