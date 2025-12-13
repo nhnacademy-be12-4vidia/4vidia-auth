@@ -57,21 +57,40 @@ public class PaycoController {
         response.sendRedirect("https://4vidia.shop");
     }
 
-    private void addCookie(HttpServletResponse response,
-                           String name,
-                           String value,
-                           int maxAge) {
+//    private void addCookie(HttpServletResponse response,
+//                           String name,
+//                           String value,
+//                           int maxAge) {
+//
+//        Cookie cookie = new Cookie(name, value);
+//        cookie.setHttpOnly(true);
+//        cookie.setSecure(cookieSecure); // HTTPS
+//        cookie.setPath("/");
+//        cookie.setMaxAge(maxAge);
+//        if (cookieDomain != null && !cookieDomain.isBlank()) {
+//            cookie.setDomain(cookieDomain);
+//        }
+//
+//        response.addCookie(cookie);
+//    }
+private void addCookie(HttpServletResponse response,
+                       String name,
+                       String value,
+                       int maxAge) {
 
-        Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(cookieSecure); // HTTPS
-        cookie.setPath("/");
-        cookie.setMaxAge(maxAge);
-        if (cookieDomain != null && !cookieDomain.isBlank()) {
-            cookie.setDomain(cookieDomain);
-        }
+    StringBuilder cookieBuilder = new StringBuilder();
+    cookieBuilder.append(name).append("=").append(value)
+            .append("; Max-Age=").append(maxAge)
+            .append("; Path=/")
+            .append("; HttpOnly")
+            .append("; Secure")
+            .append("; SameSite=None"); // 중요
 
-        response.addCookie(cookie);
+    if (cookieDomain != null && !cookieDomain.isBlank()) {
+        cookieBuilder.append("; Domain=").append(cookieDomain);
     }
+
+    response.addHeader("Set-Cookie", cookieBuilder.toString());
+}
 }
 
