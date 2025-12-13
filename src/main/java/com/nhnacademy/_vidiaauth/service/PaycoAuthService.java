@@ -29,13 +29,15 @@ public class PaycoAuthService {
     @Value("${payco.redirect-uri}")
     private String redirectUri;
 
-    public PaycoTokenResponse getAccessToken(String code) {
+    public PaycoTokenResponse getAccessToken(String code, String state) {
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", clientId);
         params.add("client_secret", secretKey);
         params.add("code", code);
+        params.add("state", state);
+
 
         PaycoTokenResponse response = restClient.post()
                 .uri(PAYCO_TOKEN_URL)

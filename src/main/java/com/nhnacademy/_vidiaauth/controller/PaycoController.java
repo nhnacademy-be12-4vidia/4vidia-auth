@@ -19,25 +19,28 @@ import java.io.IOException;
 public class PaycoController {
     private final PaycoAuthService paycoAuthService;
 
-    @PostMapping("/auth/login/payco")
+    @GetMapping("/login/payco")
     public void getPaycoUser(HttpServletResponse response) throws IOException {
         String redirectUrl = paycoAuthService.redirectToPayco();
         response.sendRedirect(redirectUrl);
     }
 
     @GetMapping("/login/oauth2/code/payco")
-    public String payCallback(@RequestParam String code) {
+    public String payCallback(@RequestParam String code, @RequestParam(required = false) String state) {
         // 토큰 요청, 회원 정보 조회, jwt 발급
-        PaycoTokenResponse token = paycoAuthService.getAccessToken(code);
+//        /login/payco → Payco redirect
+//        /login/oauth2/code/payco → code 받아 token 요청
+//        /access-token 요청
+//        /payco-member 조회
+//        /내DB 조회 or 회원가입
+//        /JWT 발급 → 프론트 반환
+        PaycoTokenResponse token = paycoAuthService.getAccessToken(code, state);
         PaycoMemberResponse member = paycoAuthService.getMemberInfo(token.getAccessToken());
+        System.out.println(member);
 
         return "";
     }
 
-    @GetMapping("/auth/test")
-    public void getPaycoUser2(HttpServletResponse response) throws IOException {
-        String redirectUrl = paycoAuthService.redirectToPayco();
-        response.sendRedirect(redirectUrl);
-    }
+
 }
 
