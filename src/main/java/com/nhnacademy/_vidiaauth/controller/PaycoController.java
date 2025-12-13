@@ -34,7 +34,7 @@ public class PaycoController {
     }
 
     @GetMapping("/login/oauth2/code/payco")
-    public void payCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
+    public void payCallback(@RequestParam String code, @RequestParam(required = false) String state, HttpServletResponse response) throws IOException {
         // 토큰 요청, 회원 정보 조회, jwt 발급
 //        /login/payco → Payco redirect
 //        /login/oauth2/code/payco → code 받아 token 요청

@@ -14,7 +14,7 @@ jwt:
 app:
   cookie:
     secure: true
-    domain: ".4vidia.shop"
+    domain: "4vidia.shop"
 
 eureka:
   client:
