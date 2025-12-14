@@ -41,7 +41,8 @@ public class ReissueService {
                 jwtUtil.getEmail(refreshToken),
                 jwtUtil.getRoles(refreshToken),
                 1000L * 60 * 30, // 30분
-                "access"
+                "access",
+                jwtUtil.getStatus(refreshToken)
         );
 
         // 새 Refresh Token 생성 (선택 사항: 기존 Refresh Token 교체)
@@ -50,7 +51,8 @@ public class ReissueService {
                 jwtUtil.getEmail(refreshToken),
                 jwtUtil.getRoles(refreshToken),
                 1000L * 60 * 60 * 24 * 7, // 7일
-                "refresh"
+                "refresh",
+                jwtUtil.getStatus(refreshToken)
         );
 
         // Redis 또는 DB에 새 Refresh Token 저장

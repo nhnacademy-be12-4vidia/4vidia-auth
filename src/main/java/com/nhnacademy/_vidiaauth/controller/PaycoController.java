@@ -1,8 +1,9 @@
 package com.nhnacademy._vidiaauth.controller;
 
-import com.nhnacademy._vidiaauth.dto.PaycoMemberResponse;
-import com.nhnacademy._vidiaauth.dto.PaycoTokenResponse;
+import com.nhnacademy._vidiaauth.client.UserClient;
+import com.nhnacademy._vidiaauth.dto.*;
 import com.nhnacademy._vidiaauth.jwt.JwtUtil;
+import com.nhnacademy._vidiaauth.repository.RefreshTokenService;
 import com.nhnacademy._vidiaauth.service.PaycoAuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -22,6 +20,8 @@ import java.io.IOException;
 public class PaycoController {
     private final JwtUtil jwtUtil;
     private final PaycoAuthService paycoAuthService;
+    private final UserClient userClient;
+    private final RefreshTokenService refreshTokenService;
     @Value("${app.cookie.secure}")
     private boolean cookieSecure;
     @Value("${app.cookie.domain}")
@@ -33,8 +33,9 @@ public class PaycoController {
         response.sendRedirect(redirectUrl);
     }
 
-    @GetMapping("/login/oauth2/code/payco")
-    public void payCallback(@RequestParam String code, @RequestParam(required = false) String state, HttpServletResponse response) throws IOException {
+    @ResponseBody
+    @PostMapping("/login/oauth2/code/payco")
+    public ResponseEntity<TokenResponse> payCallback(@RequestBody PaycoCodeRequest paycoCodeRequest, HttpServletResponse response) throws IOException {
         // 토큰 요청, 회원 정보 조회, jwt 발급
 //        /login/payco → Payco redirect
 //        /login/oauth2/code/payco → code 받아 token 요청
@@ -42,55 +43,23 @@ public class PaycoController {
 //        /payco-member 조회
 //        /내DB 조회 or 회원가입
 //        /JWT 발급 → 프론트 반환
-        PaycoTokenResponse token = paycoAuthService.getAccessToken(code);
+        PaycoTokenResponse token = paycoAuthService.getAccessToken(paycoCodeRequest.code());
         PaycoMemberResponse member = paycoAuthService.getMemberInfo(token.getAccessToken());
-        String id = member.getData().getMember().getIdNo();
-        String email = member.getData().getMember().getEmail();
-        String name = member.getData().getMember().getName();
-        String mobile = member.getData().getMember().getMobile();
-        String accessToken = jwtUtil.createToken(10L, email, "ROLE_USER", 1000L * 60 * 30, "access");
-        addCookie(response, "ACCESS_TOKEN", accessToken, 1800);
+        String paycoId = member.getData().getMember().getIdNo();
+        PaycoUserRequest paycoUserRequest = new PaycoUserRequest(paycoId);
+        OAuth2UserDto paycoUserDto = userClient.findOrCreateByPaycoId(paycoUserRequest);
+        String accessToken = jwtUtil.createToken(paycoUserDto.getUserId(), paycoUserDto.getEmail(), paycoUserDto.getRole(), 1000L * 60 * 30, "access", paycoUserDto.getStatus());
+        String refreshToken = jwtUtil.createToken(paycoUserDto.getUserId(), paycoUserDto.getEmail(), paycoUserDto.getRole(), 1000L * 60 * 30, "refresh", paycoUserDto.getStatus());
+        saveRefreshToken(paycoId, refreshToken, 1000L * 60 * 60 * 24 * 7);
 
-        System.out.println(member);
-
+        TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken);
         // 6. 프론트로 이동
-        response.sendRedirect("https://4vidia.shop");
+        return ResponseEntity.ok().body(tokenResponse);
+    }
+    private void saveRefreshToken(String paycoId, String refreshToken, long expiredMs) {
+        refreshTokenService.saveRefreshToken(paycoId, refreshToken,expiredMs);
     }
 
-    private void addCookie(HttpServletResponse response,
-                           String name,
-                           String value,
-                           int maxAge) {
 
-        Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(cookieSecure); // HTTPS
-        cookie.setPath("/");
-        cookie.setMaxAge(maxAge);
-        if (cookieDomain != null && !cookieDomain.isBlank()) {
-            cookie.setDomain(cookieDomain);
-        }
-
-        response.addCookie(cookie);
-    }
-//private void addCookie(HttpServletResponse response,
-//                       String name,
-//                       String value,
-//                       int maxAge) {
-//
-//    StringBuilder cookieBuilder = new StringBuilder();
-//    cookieBuilder.append(name).append("=").append(value)
-//            .append("; Max-Age=").append(maxAge)
-//            .append("; Path=/")
-//            .append("; HttpOnly")
-//            .append("; Secure")
-//            .append("; SameSite=None"); // 중요
-//
-//    if (cookieDomain != null && !cookieDomain.isBlank()) {
-//        cookieBuilder.append("; Domain=").append(cookieDomain);
-//    }
-//
-//    response.addHeader("Set-Cookie", cookieBuilder.toString());
-//}
 }
 

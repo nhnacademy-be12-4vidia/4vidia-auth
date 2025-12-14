@@ -13,8 +13,5 @@ public class PaycoMemberResponse {
     @Getter
     public static class PaycoMember{
         private String idNo;
-        private String email;
-        private String name;
-        private String mobile;
     }
 }

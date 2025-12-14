@@ -54,8 +54,10 @@ public class JwtFilter extends OncePerRequestFilter {
                         jwtUtil.getEmail(refreshToken),
                         jwtUtil.getRoles(refreshToken),
                         1000L * 60 * 30, // 30분
-                        "access"
+                        "access",
+                        jwtUtil.getStatus(refreshToken)
                 );
+
                 response.setHeader("Authorization", "Bearer " + newAccessToken);
 
                 // 새 Access Token으로 SecurityContext 설정
