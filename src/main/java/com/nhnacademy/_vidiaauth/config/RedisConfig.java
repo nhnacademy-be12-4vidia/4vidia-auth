@@ -34,12 +34,4 @@ public class RedisConfig {
         return template;
     }
 
-    @Bean
-    public RedisTemplate<String, DeviceSession> deviceSessionRedisTemplate() {
-        RedisTemplate<String, DeviceSession> template = new RedisTemplate<>();
-        template.setConnectionFactory(redisConnectionFactory());
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer()); // 객체 직렬화
-        return template;
-    }
 }
