@@ -1,7 +1,6 @@
 package com.nhnacademy._vidiaauth.config;
 
 
-import com.nhnacademy._vidiaauth.jwt.refresh.DeviceSession;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
