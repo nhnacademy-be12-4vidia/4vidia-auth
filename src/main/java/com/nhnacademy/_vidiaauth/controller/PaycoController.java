@@ -3,9 +3,8 @@ package com.nhnacademy._vidiaauth.controller;
 import com.nhnacademy._vidiaauth.client.UserClient;
 import com.nhnacademy._vidiaauth.dto.*;
 import com.nhnacademy._vidiaauth.jwt.JwtUtil;
-import com.nhnacademy._vidiaauth.repository.RefreshTokenService;
+import com.nhnacademy._vidiaauth.repository.TokenService;
 import com.nhnacademy._vidiaauth.service.PaycoAuthService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +20,7 @@ public class PaycoController {
     private final JwtUtil jwtUtil;
     private final PaycoAuthService paycoAuthService;
     private final UserClient userClient;
-    private final RefreshTokenService refreshTokenService;
+    private final TokenService tokenService;
     @Value("${app.cookie.secure}")
     private boolean cookieSecure;
     @Value("${app.cookie.domain}")
@@ -57,7 +56,7 @@ public class PaycoController {
         return ResponseEntity.ok().body(tokenResponse);
     }
     private void saveRefreshToken(String paycoId, String refreshToken, long expiredMs) {
-        refreshTokenService.saveRefreshToken(paycoId, refreshToken,expiredMs);
+        tokenService.saveToken(paycoId, refreshToken,expiredMs);
     }
 
 

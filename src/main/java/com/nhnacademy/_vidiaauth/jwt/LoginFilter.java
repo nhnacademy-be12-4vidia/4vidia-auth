@@ -4,13 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy._vidiaauth.dto.CustomUserDetails;
 import com.nhnacademy._vidiaauth.dto.LoginRequest;
 import com.nhnacademy._vidiaauth.dto.TokenResponse;
-import com.nhnacademy._vidiaauth.repository.RefreshTokenService;
+import com.nhnacademy._vidiaauth.repository.TokenService;
+import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,19 +18,21 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
-    private final RefreshTokenService refreshTokenService;
+    private final JweUtil jweUtil;
+    private final TokenService tokenService;
     private final ObjectMapper objectMapper;
 
-
-    public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, RefreshTokenService refreshTokenService, ObjectMapper objectMapper) {
+    public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, JweUtil jweUtil, TokenService tokenService, ObjectMapper objectMapper) {
         super(authenticationManager);
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.refreshTokenService = refreshTokenService;
+        this.jweUtil = jweUtil;
+        this.tokenService = tokenService;
         this.objectMapper = objectMapper;
     }
 
@@ -58,6 +59,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
         CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
 
+        String refreshUuid = UUID.randomUUID().toString();
+
         Long userId = user.getId();
         String email = user.getUsername();
         String roles = user.getAuthorities().iterator().next().getAuthority();
@@ -65,21 +68,23 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String accessToken = jwtUtil.createToken(userId, email, roles, 1000L * 60 * 30, "access", "ACTIVE");  // 30분
         String refreshToken = jwtUtil.createToken(userId, email, roles, 1000L * 60 * 60 * 24 * 7, "refresh", "ACTIVE"); // 7일
 
+        String accessJweToken = null;
+        try {
+            accessJweToken = jweUtil.encrypt(accessToken);
+        } catch (JOSEException e) {
+            throw new RuntimeException(e);
+        }
+
         // DB 저장
-        saveRefreshToken(email, refreshToken, 1000L * 60 * 60 * 24 * 7);
+        tokenService.saveToken(refreshUuid, refreshToken, 1000L * 60 * 60 * 24 * 7);
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken);
+        TokenResponse tokenResponse = new TokenResponse(accessJweToken, refreshUuid);
         response.getWriter().write(objectMapper.writeValueAsString(tokenResponse));
         response.setStatus(HttpStatus.OK.value());
+
     }
-
-
-    private void saveRefreshToken(String email, String refreshToken, long expiredMs) {
-        refreshTokenService.saveRefreshToken(email, refreshToken,expiredMs);
-    }
-
 
     @Override
     protected void unsuccessfulAuthentication(

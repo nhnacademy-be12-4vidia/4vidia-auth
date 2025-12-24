@@ -11,5 +11,7 @@ public record UserInfoResponse(
         @Getter
         String password,
         @Getter
-        String roles        // "ROLE_USER", "ROLE_ADMIN"
+        String roles,        // "ROLE_USER", "ROLE_ADMIN"
+        @Getter
+        String status
 ) {}

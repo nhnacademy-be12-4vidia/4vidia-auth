@@ -1,19 +1,17 @@
 package com.nhnacademy._vidiaauth.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nhnacademy._vidiaauth.jwt.JweUtil;
 import com.nhnacademy._vidiaauth.jwt.JwtFilter;
 import com.nhnacademy._vidiaauth.jwt.JwtUtil;
 import com.nhnacademy._vidiaauth.jwt.LoginFilter;
-import com.nhnacademy._vidiaauth.repository.RefreshTokenService;
-import com.nhnacademy._vidiaauth.service.CustomUserDetailsService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.nhnacademy._vidiaauth.repository.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -21,11 +19,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-
-import java.util.Collections;
 
 @Configuration
 @RequiredArgsConstructor
@@ -34,7 +27,8 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final ObjectMapper objectMapper;
     private final JwtUtil jwtUtil;
-    private final RefreshTokenService refreshTokenService;
+    private final JweUtil jweUtil;
+    private final TokenService tokenService;
     // repository 추가
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -69,11 +63,11 @@ public class SecurityConfig {
         // 인가
         http
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/auth/**", "/login/**","/login/oauth2/**","/login/oauth2/code/payco").permitAll());
+                        auth.requestMatchers("/auth/**", "/login/**","/login/oauth2/**","/login/oauth2/code/payco", "/validate").permitAll());
         http
-                .addFilterBefore(new JwtFilter(jwtUtil,refreshTokenService ), LoginFilter.class);
+                .addFilterBefore(new JwtFilter(jwtUtil, tokenService), LoginFilter.class);
 
-        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenService, objectMapper);
+        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, jweUtil, tokenService, objectMapper);
         loginFilter.setFilterProcessesUrl("/auth/login"); // 이걸 지정해야 /auth/login 요청을 잡습니다.
 
         http

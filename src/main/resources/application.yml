@@ -5,11 +5,13 @@ spring:
     redis:
       host: s4.java21.net
       port: 6379
-      password: "*N2vya7H@muDTwdNMR!"
+      password: ${REDIS_PASSWORD}
       database: 387
       timeout: 5000ms
 jwt:
-  secret: "qwertyujhgfdsazxcvbnjhgfdsqwertyuhgfdsazxcvb"
+  secret: ${JWT_SECRET}
+jwe:
+  secret: ${JWE_SECRET}
 
 app:
   cookie:

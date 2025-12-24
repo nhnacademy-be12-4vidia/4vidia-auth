@@ -2,27 +2,28 @@ package com.nhnacademy._vidiaauth.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy._vidiaauth.dto.TokenResponse;
+import com.nhnacademy._vidiaauth.jwt.JweUtil;
 import com.nhnacademy._vidiaauth.jwt.JwtUtil;
-import com.nhnacademy._vidiaauth.repository.RefreshTokenService;
-import jakarta.servlet.http.Cookie;
+import com.nhnacademy._vidiaauth.repository.TokenService;
+import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class ReissueService {
     private final JwtUtil jwtUtil;
-    private final RefreshTokenService refreshTokenService;
-    private final ObjectMapper objectMapper;
+    private final TokenService tokenService;
+    private final JweUtil jweUtil;
 
-    public TokenResponse reissueTokens(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String refreshToken = getRefreshTokenFromCookie(request);
+    public TokenResponse reissueTokens(HttpServletRequest request, HttpServletResponse response, String refreshUuid) throws IOException {
+        String refreshToken = tokenService.getToken(refreshUuid);
+        tokenService.deleteToken(refreshUuid);
 
         if (refreshToken == null || refreshToken.isBlank()) {
             return null;
@@ -30,8 +31,7 @@ public class ReissueService {
 
         // 유효성 확인
         if (!jwtUtil.isTokenValid(refreshToken)
-                || !"refresh".equals(jwtUtil.getType(refreshToken))
-                || !refreshTokenService.validateRefreshToken(jwtUtil.getEmail(refreshToken), refreshToken)) {
+                || !"refresh".equals(jwtUtil.getType(refreshToken))) {
             return null;
         }
 
@@ -45,7 +45,7 @@ public class ReissueService {
                 jwtUtil.getStatus(refreshToken)
         );
 
-        // 새 Refresh Token 생성 (선택 사항: 기존 Refresh Token 교체)
+        // 새 Refresh Token 생성
         String newRefreshToken = jwtUtil.createToken(
                 jwtUtil.getUserId(refreshToken),
                 jwtUtil.getEmail(refreshToken),
@@ -55,24 +55,25 @@ public class ReissueService {
                 jwtUtil.getStatus(refreshToken)
         );
 
-        // Redis 또는 DB에 새 Refresh Token 저장
-        refreshTokenService.saveRefreshToken(jwtUtil.getEmail(refreshToken), newRefreshToken, 1000L * 60 * 60 * 24 * 7);
+
+
+        String accessJweToken = null;
+        try {
+            accessJweToken = jweUtil.encrypt(newAccessToken);
+        } catch (JOSEException e) {
+            throw new RuntimeException(e);
+        }
+
+        // DB 저장
+        String newRefreshUuid = UUID.randomUUID().toString();
+
+
+        tokenService.saveToken(newRefreshUuid, newRefreshToken, 1000L * 60 * 60 * 24 * 7);
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-
-        TokenResponse tokenResponse = new TokenResponse(newAccessToken, newRefreshToken);
+        TokenResponse tokenResponse = new TokenResponse(accessJweToken, newRefreshUuid);
 
         return tokenResponse;
-    }
-
-    private String getRefreshTokenFromCookie(HttpServletRequest request) {
-        if (request.getCookies() == null) return null;
-        for (Cookie cookie : request.getCookies()) {
-            if ("refresh".equals(cookie.getName())) {
-                return cookie.getValue();
-            }
-        }
-        return null;
     }
 }

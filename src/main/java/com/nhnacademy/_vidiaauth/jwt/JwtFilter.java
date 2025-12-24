@@ -2,8 +2,7 @@ package com.nhnacademy._vidiaauth.jwt;
 
 import com.nhnacademy._vidiaauth.dto.CustomUserDetails;
 import com.nhnacademy._vidiaauth.dto.UserInfoResponse;
-import com.nhnacademy._vidiaauth.repository.RefreshTokenService;
-import io.jsonwebtoken.ExpiredJwtException;
+import com.nhnacademy._vidiaauth.repository.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -21,12 +20,12 @@ import java.io.PrintWriter;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
-    private final RefreshTokenService refreshTokenService;
+    private final TokenService tokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String path = request.getServletPath();
-        if ("/auth/**".equals(path)) {
+        if (path.startsWith("/auth") || path.startsWith("/validate")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -46,7 +45,7 @@ public class JwtFilter extends OncePerRequestFilter {
             if (refreshToken != null && !refreshToken.isBlank()
                     && jwtUtil.isTokenValid(refreshToken)
                     && "refresh".equals(jwtUtil.getType(refreshToken))
-                    && refreshTokenService.validateRefreshToken(jwtUtil.getEmail(refreshToken), refreshToken)) {
+                    && tokenService.validateToken(jwtUtil.getEmail(refreshToken), refreshToken)) {
 
                 // 새 Access Token 발급
                 String newAccessToken = jwtUtil.createToken(
@@ -94,8 +93,9 @@ public class JwtFilter extends OncePerRequestFilter {
         Long userId = jwtUtil.getUserId(token);
         String email = jwtUtil.getEmail(token);
         String roles = jwtUtil.getRoles(token);
+        String status = jwtUtil.getStatus(token);
 
-        UserInfoResponse userInfoResponse = new UserInfoResponse(userId, email, "", roles);
+        UserInfoResponse userInfoResponse = new UserInfoResponse(userId, email, "", roles, status);
         CustomUserDetails userDetails = new CustomUserDetails(userInfoResponse);
 
         Authentication authToken = new UsernamePasswordAuthenticationToken(

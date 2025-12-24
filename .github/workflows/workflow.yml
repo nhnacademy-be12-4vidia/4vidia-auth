@@ -46,12 +46,16 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           PAYCO_CLIENT_ID: ${{ secrets.PAYCO_CLIENT_ID }}
           PAYCO_CLIENT_SECRET: ${{  secrets.PAYCO_CLIENT_SECRET }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWE_SECRET: ${{ secrets.JWE_SECRET }}
+
         with:
           host: s2.java21.net
           username: be12-team4
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 8822
-          envs: GH_TOKEN,GH_OWNER,SSH_PRIVATE_KEY,ADMIN_ID,ADMIN_PASSWORD,PAYCO_CLIENT_ID,PAYCO_CLIENT_SECRET
+          envs: GH_TOKEN,GH_OWNER,SSH_PRIVATE_KEY,ADMIN_ID,ADMIN_PASSWORD,PAYCO_CLIENT_ID,PAYCO_CLIENT_SECRET,REDIS_PASSWORD,JWT_SECRET,JWE_SECRET
           script_stop: true
           script: |
             echo $GH_TOKEN | docker login ghcr.io -u baejongto --password-stdin

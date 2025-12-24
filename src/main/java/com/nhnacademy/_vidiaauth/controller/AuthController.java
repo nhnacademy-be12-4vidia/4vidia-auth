@@ -1,22 +1,20 @@
 package com.nhnacademy._vidiaauth.controller;
 
-import com.nhnacademy._vidiaauth.dto.CustomUserDetails;
 import com.nhnacademy._vidiaauth.dto.TokenResponse;
-import com.nhnacademy._vidiaauth.repository.RefreshTokenService;
+import com.nhnacademy._vidiaauth.dto.UserInfoResponse;
+import com.nhnacademy._vidiaauth.jwt.JweUtil;
+import com.nhnacademy._vidiaauth.jwt.JwtUtil;
+import com.nhnacademy._vidiaauth.repository.TokenService;
 import com.nhnacademy._vidiaauth.service.ReissueService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -24,7 +22,10 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class AuthController {
     private final ReissueService reissueService;
-    private final RefreshTokenService refreshTokenService;
+    private final TokenService tokenService;
+    private final JwtUtil jwtUtil;
+    private final JweUtil jweUtil;
+
 
     @PostMapping("/auth/login")
     public ResponseEntity<TokenResponse> getUser(){
@@ -35,8 +36,8 @@ public class AuthController {
     }
 
     @PostMapping("/auth/reissue")
-    public ResponseEntity<TokenResponse> reissueTokens(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        TokenResponse tokenResponse = reissueService.reissueTokens(request, response);
+    public ResponseEntity<TokenResponse> reissueTokens(HttpServletRequest request, HttpServletResponse response, @RequestBody String refreshUuid) throws IOException {
+        TokenResponse tokenResponse = reissueService.reissueTokens(request, response, refreshUuid);
 
         if (tokenResponse == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
@@ -48,7 +49,7 @@ public class AuthController {
     public ResponseEntity<String> logout(@RequestHeader("X-User-Id") Long userId, HttpServletRequest request) {
         String refreshToken = getRefreshTokenFromCookie(request);
         if (refreshToken != null) {
-            refreshTokenService.deleteRefreshToken(refreshToken);
+            tokenService.deleteToken(refreshToken);
         }
         return ResponseEntity.ok().body(String.valueOf(userId));
     }
@@ -56,11 +57,62 @@ public class AuthController {
     private String getRefreshTokenFromCookie(HttpServletRequest request) {
         if (request.getCookies() == null) return null;
         for (Cookie cookie : request.getCookies()) {
-            if ("refresh".equals(cookie.getName())) {
+            if ("AUT".equals(cookie.getName())) {
                 return cookie.getValue();
             }
         }
         return null;
+    }
+
+    @PostMapping("/validate")
+    public ResponseEntity<UserInfoResponse> validateToken(@CookieValue(value = "SES", required = false) String ses, @CookieValue(value = "AUT", required = false) String aut, HttpServletResponse response) {
+
+        try {
+            if (ses != null && jwtUtil.isTokenValid(jweUtil.decrypt(ses))) {
+                String decryptedSes = jweUtil.decrypt(ses);
+
+                Long userId = jwtUtil.getUserId(decryptedSes);
+                String role = jwtUtil.getRoles(decryptedSes);
+                String email = jwtUtil.getEmail(decryptedSes);
+                String status = jwtUtil.getStatus(decryptedSes);
+
+                return ResponseEntity.ok(new UserInfoResponse(userId, role, email, role, status));
+            }
+
+            if (aut != null && jwtUtil.isTokenValid(jweUtil.decrypt(aut))) {
+                String decryptedAut = jweUtil.decrypt(aut);
+
+                // 새로운 SES 생성 (예: 30분)
+                String newSes = jwtUtil.createToken(
+                        jwtUtil.getUserId(decryptedAut),
+                        jwtUtil.getEmail(decryptedAut),
+                        jwtUtil.getRoles(decryptedAut),
+                        1000L * 60 * 30,  // 30분
+                        "access",
+                        "ACTIVE"
+                );
+
+                // SES 쿠키로 브라우저 전달
+                ResponseCookie cookie = ResponseCookie.from("SES", jweUtil.encrypt(newSes))
+                        .httpOnly(true)
+                        .path("/")
+                        .maxAge(60 * 60 * 24 * 7) //일주일
+                        .build();
+                response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+                Long userId = jwtUtil.getUserId(decryptedAut);
+                String role = jwtUtil.getRoles(decryptedAut);
+                String email = jwtUtil.getEmail(decryptedAut);
+                String status = jwtUtil.getStatus(decryptedAut);
+
+                return ResponseEntity.ok(new UserInfoResponse(userId, role, email, role, status));
+            }
+
+            // SES, AUT 둘 다 없거나 유효하지 않음 → 로그인 필요
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
 }

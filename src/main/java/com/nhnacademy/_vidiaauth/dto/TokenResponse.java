@@ -4,5 +4,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record TokenResponse(
         String accessToken,
-        String refreshToken
+        String refreshUuid
 ) {}
