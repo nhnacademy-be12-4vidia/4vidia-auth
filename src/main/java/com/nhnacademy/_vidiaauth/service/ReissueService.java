@@ -38,7 +38,6 @@ public class ReissueService {
         // 새로운 Access Token 생성
         String newAccessToken = jwtUtil.createToken(
                 jwtUtil.getUserId(refreshToken),
-                jwtUtil.getEmail(refreshToken),
                 jwtUtil.getRoles(refreshToken),
                 1000L * 60 * 30, // 30분
                 "access",
@@ -48,7 +47,6 @@ public class ReissueService {
         // 새 Refresh Token 생성
         String newRefreshToken = jwtUtil.createToken(
                 jwtUtil.getUserId(refreshToken),
-                jwtUtil.getEmail(refreshToken),
                 jwtUtil.getRoles(refreshToken),
                 1000L * 60 * 60 * 24 * 7, // 7일
                 "refresh",

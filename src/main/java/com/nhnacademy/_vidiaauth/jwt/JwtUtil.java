@@ -2,7 +2,6 @@ package com.nhnacademy._vidiaauth.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +17,8 @@ public class JwtUtil {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String createToken(Long id, String email, String roles, long expirationMs, String type, String status) {
+    public String createToken(Long id, String roles, long expirationMs, String type, String status) {
         return Jwts.builder()
-                .setSubject(email)
                 .claim("id", id)
                 .claim("roles", roles)
                 .claim("type", type)  // access / refresh

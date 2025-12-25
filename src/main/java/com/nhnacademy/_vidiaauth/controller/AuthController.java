@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiaauth.controller;
 
 import com.nhnacademy._vidiaauth.dto.TokenResponse;
+import com.nhnacademy._vidiaauth.dto.UserGatewayResponse;
 import com.nhnacademy._vidiaauth.dto.UserInfoResponse;
 import com.nhnacademy._vidiaauth.jwt.JweUtil;
 import com.nhnacademy._vidiaauth.jwt.JwtUtil;
@@ -10,6 +11,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
@@ -37,6 +40,7 @@ public class AuthController {
 
     @PostMapping("/auth/reissue")
     public ResponseEntity<TokenResponse> reissueTokens(HttpServletRequest request, HttpServletResponse response, @RequestBody String refreshUuid) throws IOException {
+        log.info("재발급");
         TokenResponse tokenResponse = reissueService.reissueTokens(request, response, refreshUuid);
 
         if (tokenResponse == null) {
@@ -47,6 +51,7 @@ public class AuthController {
     }
     @PostMapping("/auth/logout")
     public ResponseEntity<String> logout(@RequestHeader("X-User-Id") Long userId, HttpServletRequest request) {
+        log.info("로그아웃");
         String refreshToken = getRefreshTokenFromCookie(request);
         if (refreshToken != null) {
             tokenService.deleteToken(refreshToken);
@@ -65,18 +70,17 @@ public class AuthController {
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<UserInfoResponse> validateToken(@CookieValue(value = "SES", required = false) String ses, @CookieValue(value = "AUT", required = false) String aut, HttpServletResponse response) {
-
+    public ResponseEntity<UserGatewayResponse> validateToken(@CookieValue(value = "SES", required = false) String ses, @CookieValue(value = "AUT", required = false) String aut, HttpServletResponse response) {
+        log.info("jwt 유효성 검사");
         try {
             if (ses != null && jwtUtil.isTokenValid(jweUtil.decrypt(ses))) {
                 String decryptedSes = jweUtil.decrypt(ses);
 
                 Long userId = jwtUtil.getUserId(decryptedSes);
                 String role = jwtUtil.getRoles(decryptedSes);
-                String email = jwtUtil.getEmail(decryptedSes);
                 String status = jwtUtil.getStatus(decryptedSes);
 
-                return ResponseEntity.ok(new UserInfoResponse(userId, role, email, role, status));
+                return ResponseEntity.ok(new UserGatewayResponse(userId, role, status));
             }
 
             if (aut != null && jwtUtil.isTokenValid(jweUtil.decrypt(aut))) {
@@ -85,7 +89,6 @@ public class AuthController {
                 // 새로운 SES 생성 (예: 30분)
                 String newSes = jwtUtil.createToken(
                         jwtUtil.getUserId(decryptedAut),
-                        jwtUtil.getEmail(decryptedAut),
                         jwtUtil.getRoles(decryptedAut),
                         1000L * 60 * 30,  // 30분
                         "access",
@@ -102,10 +105,9 @@ public class AuthController {
 
                 Long userId = jwtUtil.getUserId(decryptedAut);
                 String role = jwtUtil.getRoles(decryptedAut);
-                String email = jwtUtil.getEmail(decryptedAut);
                 String status = jwtUtil.getStatus(decryptedAut);
 
-                return ResponseEntity.ok(new UserInfoResponse(userId, role, email, role, status));
+                return ResponseEntity.ok(new UserGatewayResponse(userId, role, status));
             }
 
             // SES, AUT 둘 다 없거나 유효하지 않음 → 로그인 필요

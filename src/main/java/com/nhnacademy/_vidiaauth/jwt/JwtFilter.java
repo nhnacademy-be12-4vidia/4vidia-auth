@@ -50,7 +50,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 // 새 Access Token 발급
                 String newAccessToken = jwtUtil.createToken(
                         jwtUtil.getUserId(refreshToken),
-                        jwtUtil.getEmail(refreshToken),
                         jwtUtil.getRoles(refreshToken),
                         1000L * 60 * 30, // 30분
                         "access",

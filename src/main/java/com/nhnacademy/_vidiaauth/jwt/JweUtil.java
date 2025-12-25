@@ -42,9 +42,4 @@ public class JweUtil {
         return jweObject.getPayload().toString(); // JWT 원본 반환
     }
 
-    // JWT에서 Claims 확인 (원본 JWT 복호화 후)
-    public SignedJWT parseClaims(String jwe) throws ParseException, JOSEException {
-        String jwt = decrypt(jwe);
-        return SignedJWT.parse(jwt);
-    }
 }
