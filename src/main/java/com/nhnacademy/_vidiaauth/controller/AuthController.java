@@ -40,15 +40,16 @@ public class AuthController {
     }
 
     @PostMapping("/auth/reissue")
-    public ResponseEntity<TokenResponse> reissueTokens(HttpServletRequest request, HttpServletResponse response, @RequestBody String refreshUuid) throws IOException {
+    public ResponseEntity<ApiResponse<TokenResponse>> reissueTokens(HttpServletRequest request, HttpServletResponse response, @RequestBody String refreshUuid) throws IOException {
         log.info("재발급");
         TokenResponse tokenResponse = reissueService.reissueTokens(request, response, refreshUuid);
 
         if (tokenResponse == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<TokenResponse>fail(401, "Token reissue failed", "AUTH001"));
         }
 
-        return ResponseEntity.ok(tokenResponse);
+        return ResponseEntity.ok(ApiResponse.success(tokenResponse));
     }
     @PostMapping("/auth/logout")
     public ApiResponse<String> logout(@RequestHeader("X-User-Id") Long userId, HttpServletRequest request) {
