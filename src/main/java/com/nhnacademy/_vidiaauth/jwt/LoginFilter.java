@@ -61,8 +61,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),   // username은 이메일
-                        loginRequest.getPassword()
+                        loginRequest.email(),   // username은 이메일
+                        loginRequest.password()
                 );
 
         return authenticationManager.authenticate(authToken);
