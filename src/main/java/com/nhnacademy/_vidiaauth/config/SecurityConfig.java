@@ -63,7 +63,7 @@ public class SecurityConfig {
         // 인가
         http
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/auth/**", "/login/**","/login/oauth2/**","/login/oauth2/code/payco", "/validate").permitAll());
+                        auth.requestMatchers("/auth/**", "/login/**","/login/oauth2/**","/login/oauth2/code/payco", "/internal/validate").permitAll());
         http
                 .addFilterBefore(new JwtFilter(jwtUtil, tokenService), LoginFilter.class);
 

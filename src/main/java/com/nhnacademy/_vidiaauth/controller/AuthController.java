@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiaauth.controller;
 
+import com.nhnacademy._vidiaauth.dto.ApiResponse;
 import com.nhnacademy._vidiaauth.dto.TokenResponse;
 import com.nhnacademy._vidiaauth.dto.UserGatewayResponse;
 import com.nhnacademy._vidiaauth.dto.UserInfoResponse;
@@ -50,13 +51,13 @@ public class AuthController {
         return ResponseEntity.ok(tokenResponse);
     }
     @PostMapping("/auth/logout")
-    public ResponseEntity<String> logout(@RequestHeader("X-User-Id") Long userId, HttpServletRequest request) {
+    public ApiResponse<String> logout(@RequestHeader("X-User-Id") Long userId, HttpServletRequest request) {
         log.info("로그아웃");
         String refreshToken = getRefreshTokenFromCookie(request);
         if (refreshToken != null) {
             tokenService.deleteToken(refreshToken);
         }
-        return ResponseEntity.ok().body(String.valueOf(userId));
+        return ApiResponse.success(String.valueOf(userId));
     }
 
     private String getRefreshTokenFromCookie(HttpServletRequest request) {
@@ -69,7 +70,7 @@ public class AuthController {
         return null;
     }
 
-    @PostMapping("/validate")
+    @PostMapping("/internal/validate")
     public ResponseEntity<UserGatewayResponse> validateToken(@CookieValue(value = "SES", required = false) String ses, @CookieValue(value = "AUT", required = false) String aut, HttpServletResponse response) {
         log.info("jwt 유효성 검사");
         try {
@@ -107,7 +108,7 @@ public class AuthController {
                 String role = jwtUtil.getRoles(decryptedAut);
                 String status = jwtUtil.getStatus(decryptedAut);
 
-                return ResponseEntity.ok(new UserGatewayResponse(userId, role, status));
+                return ResponseEntity.ok().body(new UserGatewayResponse(userId, role, status));
             }
 
             // SES, AUT 둘 다 없거나 유효하지 않음 → 로그인 필요

@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "4vidia-bookstore-service")
 public interface UserClient {
 
-    @GetMapping("/users") // 기존 "/my/users"
+    @GetMapping("/internal/users") // 기존 "/my/users"
     UserInfoResponse getUserByEmail(@RequestParam String email);
 
-    @PostMapping("/auth/payco/find-or-create")
+    @PostMapping("/internal/auth/payco/find-or-create")
     OAuth2UserDto findOrCreateByPaycoId(@RequestBody PaycoUserRequest paycoUserRequest);
 }

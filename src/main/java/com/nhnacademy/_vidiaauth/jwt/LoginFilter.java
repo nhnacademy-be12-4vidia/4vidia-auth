@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiaauth.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nhnacademy._vidiaauth.dto.ApiResponse;
 import com.nhnacademy._vidiaauth.dto.CustomUserDetails;
 import com.nhnacademy._vidiaauth.dto.LoginRequest;
 import com.nhnacademy._vidiaauth.dto.TokenResponse;
@@ -92,7 +93,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             TokenResponse tokenResponse = new TokenResponse(accessJweToken, refreshUuid);
-            response.getWriter().write(objectMapper.writeValueAsString(tokenResponse));
+            ApiResponse<TokenResponse> success = ApiResponse.success(tokenResponse);
+            response.getWriter().write(objectMapper.writeValueAsString(success));
             response.setStatus(HttpStatus.OK.value());
 
         }finally {
