@@ -1,17 +1,17 @@
 package com.nhnacademy._vidiaauth.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
 // user-service -> auth
-public record UserInfoResponse(
+public record AuthUserDto(
+        @Getter
         Long id,
         @Getter
         String email,
         @Getter
         String password,
         @Getter
-        String roles,        // "ROLE_USER", "ROLE_ADMIN"
-        @Getter
+        String roles,
+        @Getter// "ROLE_USER", "ROLE_ADMIN"
         String status
 ) {}

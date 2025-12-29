@@ -6,11 +6,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 @RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
-    private final UserInfoResponse userInfoResponse;
+    private final AuthUserDto authUserDto;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -19,7 +18,7 @@ public class CustomUserDetails implements UserDetails {
         collection.add(new GrantedAuthority() {
             @Override
             public String getAuthority() {
-                return userInfoResponse.getRoles();
+                return authUserDto.getRoles();
             }
         });
         return collection;
@@ -27,15 +26,19 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return userInfoResponse.getPassword();
+        return authUserDto.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return userInfoResponse.getEmail();
+        return authUserDto.getEmail();
     }
 
     public Long getId() {
-        return userInfoResponse.id();
+        return authUserDto.id();
+    }
+
+    public String getStatus() {
+        return authUserDto.getStatus();
     }
 }

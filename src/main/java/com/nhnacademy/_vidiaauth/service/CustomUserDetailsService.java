@@ -1,8 +1,7 @@
 package com.nhnacademy._vidiaauth.service;
 import com.nhnacademy._vidiaauth.client.UserClient;
 import com.nhnacademy._vidiaauth.dto.CustomUserDetails;
-import com.nhnacademy._vidiaauth.dto.UserInfoResponse;
-import com.nhnacademy._vidiaauth.repository.TokenService;
+import com.nhnacademy._vidiaauth.dto.AuthUserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,7 +14,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserClient userClient;
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UserInfoResponse userInfo = userClient.getUserByEmail(email);
+        AuthUserDto userInfo = userClient.getUserByEmail(email);
 
         // CustomUserDetails로 감싸서 반환
         return new CustomUserDetails(userInfo);

@@ -2,7 +2,7 @@ package com.nhnacademy._vidiaauth.client;
 
 import com.nhnacademy._vidiaauth.dto.OAuth2UserDto;
 import com.nhnacademy._vidiaauth.dto.PaycoUserRequest;
-import com.nhnacademy._vidiaauth.dto.UserInfoResponse;
+import com.nhnacademy._vidiaauth.dto.AuthUserDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface UserClient {
 
     @GetMapping("/internal/users") // 기존 "/my/users"
-    UserInfoResponse getUserByEmail(@RequestParam String email);
+    AuthUserDto getUserByEmail(@RequestParam String email);
 
     @PostMapping("/internal/auth/payco/find-or-create")
     OAuth2UserDto findOrCreateByPaycoId(@RequestBody PaycoUserRequest paycoUserRequest);

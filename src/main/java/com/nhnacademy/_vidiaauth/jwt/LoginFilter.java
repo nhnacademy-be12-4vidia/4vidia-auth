@@ -75,9 +75,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             Long userId = user.getId();
             log.info("userId:{}-인증성공", userId);
             String roles = user.getAuthorities().iterator().next().getAuthority();
+            String status = user.getStatus();
 
-            String accessToken = jwtUtil.createToken(userId, roles, 1000L * 60 * 30, "access", "ACTIVE");  // 30분
-            String refreshToken = jwtUtil.createToken(userId, roles, 1000L * 60 * 60 * 24 * 7, "refresh", "ACTIVE"); // 7일
+            String accessToken = jwtUtil.createToken(userId, roles, 1000L * 60 * 30, "access", status);  // 30분
+            String refreshToken = jwtUtil.createToken(userId, roles, 1000L * 60 * 60 * 24 * 7, "refresh", status); // 7일
 
             String refreshUuid = UUID.randomUUID().toString();
             String accessJweToken = null;

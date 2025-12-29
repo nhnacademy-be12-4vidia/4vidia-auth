@@ -3,7 +3,6 @@ package com.nhnacademy._vidiaauth.controller;
 import com.nhnacademy._vidiaauth.dto.ApiResponse;
 import com.nhnacademy._vidiaauth.dto.TokenResponse;
 import com.nhnacademy._vidiaauth.dto.UserGatewayResponse;
-import com.nhnacademy._vidiaauth.dto.UserInfoResponse;
 import com.nhnacademy._vidiaauth.jwt.JweUtil;
 import com.nhnacademy._vidiaauth.jwt.JwtUtil;
 import com.nhnacademy._vidiaauth.repository.TokenService;
@@ -94,7 +93,7 @@ public class AuthController {
                         jwtUtil.getRoles(decryptedAut),
                         1000L * 60 * 30,  // 30분
                         "access",
-                        "ACTIVE"
+                        jwtUtil.getStatus(decryptedAut)
                 );
 
                 // SES 쿠키로 브라우저 전달
