@@ -15,6 +15,6 @@ public interface UserClient {
     @GetMapping("/internal/users") // 기존 "/my/users"
     AuthUserDto getUserByEmail(@RequestParam String email);
 
-    @PostMapping("/internal/auth/payco/find-or-create")
+    @PostMapping("/internal/payco/find-or-create")
     OAuth2UserDto findOrCreateByPaycoId(@RequestBody PaycoUserRequest paycoUserRequest);
 }
