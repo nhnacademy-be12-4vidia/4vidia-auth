@@ -2,7 +2,6 @@ package com.nhnacademy._vidiaauth.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy._vidiaauth.jwt.JweUtil;
-import com.nhnacademy._vidiaauth.jwt.JwtFilter;
 import com.nhnacademy._vidiaauth.jwt.JwtUtil;
 import com.nhnacademy._vidiaauth.jwt.LoginFilter;
 import com.nhnacademy._vidiaauth.repository.TokenService;
@@ -63,9 +62,7 @@ public class SecurityConfig {
         // 인가
         http
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/auth/**", "/login/**","/login/oauth2/**","/login/oauth2/code/payco", "/internal/validate").permitAll());
-        http
-                .addFilterBefore(new JwtFilter(jwtUtil, tokenService), LoginFilter.class);
+                        auth.requestMatchers("/auth/**", "/login/**","/login/oauth2/**","/login/oauth2/code/payco", "/internal/validate", "/test/**").permitAll());
 
         LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, jweUtil, tokenService, objectMapper);
         loginFilter.setFilterProcessesUrl("/auth/login"); // 이걸 지정해야 /auth/login 요청을 잡습니다.
