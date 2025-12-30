@@ -29,3 +29,12 @@ payco:
   client-id:  ${PAYCO_CLIENT_ID}
   client-secret:  ${PAYCO_CLIENT_SECRET}
   redirect-uri: https://4vidia.shop/login/oauth2/code/payco
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
