@@ -1,4 +1,4 @@
-name: 4vidia-front
+name: 4vidia-auth
 on:
   push:
     branches:
