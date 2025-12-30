@@ -90,7 +90,7 @@ jobs:
             echo "Waiting for 4vidia-auth-1 health check..."
             HEALTH_CHECK_COUNT=0
             while [ $HEALTH_CHECK_COUNT -lt 12 ]; do
-              if curl -s http://localhost:10471/actuator/health | grep -q '"status":"UP"'; then
+              if curl -s http://localhost:10469/actuator/health | grep -q '"status":"UP"'; then
                 echo "4vidia-auth-1 (GREEN) is UP."
                 break
               fi
@@ -121,7 +121,7 @@ jobs:
             echo "Waiting for 4vidia-auth-2 health check..."
             HEALTH_CHECK_COUNT=0
             while [ $HEALTH_CHECK_COUNT -lt 12 ]; do
-              if curl -s http://localhost:10472/actuator/health | grep -q '"status":"UP"'; then
+              if curl -s http://localhost:10470/actuator/health | grep -q '"status":"UP"'; then
                 echo "4vidia-auth-2 (BLUE) is UP."
                 break
               fi
