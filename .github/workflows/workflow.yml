@@ -106,7 +106,7 @@ jobs:
             # 2. BLUE(2번) 트래픽 드레인 및 재시작
             echo "Setting 4vidia-auth-2 DOWN in Eureka..."
             curl -X PUT \
-              "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/v2/apps/4VIDIA-AUTH-SERVICE/4vidia-auth-2/status?value=OUT_OF_SERVICE" || true
+              "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/v2/apps/4VIDIA-AUTH/4vidia-auth-2/status?value=OUT_OF_SERVICE" || true
 
             sleep 30
 
