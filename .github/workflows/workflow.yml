@@ -70,9 +70,71 @@ jobs:
           envs: GH_TOKEN,GH_OWNER,SSH_PRIVATE_KEY,ADMIN_ID,ADMIN_PASSWORD,PAYCO_CLIENT_ID,PAYCO_CLIENT_SECRET,REDIS_PASSWORD,JWT_SECRET,JWE_SECRET
           script_stop: true
           script: |
+            set -e
+
             echo $GH_TOKEN | docker login ghcr.io -u baejongto --password-stdin
             cd ~
-            
-            echo "Starting 4vidia-auth-1"
-            docker compose pull 4vidia-auth-1
+
+            # 1. GREEN(1번) 배포
+            echo "Pulling latest image for 4vidia-auth-1..."
+            docker compose pull 4vidia-auth-1 4vidia-auth-2
+
+            echo "Setting 4vidia-auth-1 DOWN in Eureka..."
+            curl -X PUT \
+              "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/v2/apps/4VIDIA-AUTH-SERVICE/4vidia-auth-1/status?value=OUT_OF_SERVICE" || true
+
+            echo "Starting 4vidia-auth-1 (GREEN)..."
             docker compose up -d 4vidia-auth-1
+            sleep 30
+
+            echo "Waiting for 4vidia-auth-1 health check..."
+            HEALTH_CHECK_COUNT=0
+            while [ $HEALTH_CHECK_COUNT -lt 12 ]; do
+              if curl -s http://localhost:10471/actuator/health | grep -q '"status":"UP"'; then
+                echo "4vidia-auth-1 (GREEN) is UP."
+                break
+              fi
+              echo "Health check attempt $((HEALTH_CHECK_COUNT+1)) failed. Retrying in 10s..."
+              sleep 10
+              HEALTH_CHECK_COUNT=$((HEALTH_CHECK_COUNT+1))
+            done
+            if [ $HEALTH_CHECK_COUNT -eq 12 ]; then
+              echo "GREEN container failed. Aborting deployment."
+              exit 1
+            fi
+
+            # 2. BLUE(2번) 트래픽 드레인 및 재시작
+            echo "Setting 4vidia-auth-2 DOWN in Eureka..."
+            curl -X PUT \
+              "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/v2/apps/4VIDIA-AUTH-SERVICE/4vidia-auth-2/status?value=OUT_OF_SERVICE" || true
+
+            sleep 30
+
+            echo "Stopping 4vidia-auth-2 (BLUE)..."
+            docker compose stop 4vidia-auth-2
+            sleep 30
+
+            echo "Starting 4vidia-auth-2 (BLUE)..."
+            docker compose up -d 4vidia-auth-2
+            sleep 30
+
+            echo "Waiting for 4vidia-auth-2 health check..."
+            HEALTH_CHECK_COUNT=0
+            while [ $HEALTH_CHECK_COUNT -lt 12 ]; do
+              if curl -s http://localhost:10472/actuator/health | grep -q '"status":"UP"'; then
+                echo "4vidia-auth-2 (BLUE) is UP."
+                break
+              fi
+              echo "Health check attempt $((HEALTH_CHECK_COUNT+1)) failed. Retrying in 10s..."
+              sleep 10
+              HEALTH_CHECK_COUNT=$((HEALTH_CHECK_COUNT+1))
+            done
+            if [ $HEALTH_CHECK_COUNT -eq 12 ]; then
+              echo "BLUE container failed."
+              exit 1
+            fi
+
+            echo "Cleaning up unused Docker images..."
+            docker image prune -f
+
+            echo "🚀 Deployment completed successfully!"

@@ -100,7 +100,7 @@ public class AuthController {
                 ResponseCookie cookie = ResponseCookie.from("SES", jweUtil.encrypt(newSes))
                         .httpOnly(true)
                         .path("/")
-                        .maxAge(60 * 60 * 24 * 7) //일주일
+                        .maxAge(60 * 60 * 24 * 7L) //일주일
                         .build();
                 response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
