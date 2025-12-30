@@ -62,7 +62,7 @@ public class SecurityConfig {
         // 인가
         http
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/auth/**", "/login/**","/login/oauth2/**","/login/oauth2/code/payco", "/internal/validate", "/test/**").permitAll());
+                        auth.requestMatchers("/auth/**", "/login/**","/login/oauth2/**","/login/oauth2/code/payco", "/internal/validate", "/test/**", "/actuator/**").permitAll());
 
         LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, jweUtil, tokenService, objectMapper);
         loginFilter.setFilterProcessesUrl("/auth/login"); // 이걸 지정해야 /auth/login 요청을 잡습니다.
