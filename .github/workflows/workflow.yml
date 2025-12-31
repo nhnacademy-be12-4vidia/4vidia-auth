@@ -82,10 +82,10 @@ jobs:
             echo "Setting 4vidia-auth-1 DOWN in Eureka..."
             curl -X PUT \
               "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/v2/apps/4VIDIA-AUTH/4vidia-auth-1/status?value=OUT_OF_SERVICE" || true
+            sleep 30
 
             echo "Starting 4vidia-auth-1 (GREEN)..."
             docker compose up -d 4vidia-auth-1
-            sleep 30
 
             echo "Waiting for 4vidia-auth-1 health check..."
             HEALTH_CHECK_COUNT=0
@@ -107,11 +107,6 @@ jobs:
             echo "Setting 4vidia-auth-2 DOWN in Eureka..."
             curl -X PUT \
               "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/v2/apps/4VIDIA-AUTH/4vidia-auth-2/status?value=OUT_OF_SERVICE" || true
-
-            sleep 30
-
-            echo "Stopping 4vidia-auth-2 (BLUE)..."
-            docker compose stop 4vidia-auth-2
             sleep 30
 
             echo "Starting 4vidia-auth-2 (BLUE)..."
